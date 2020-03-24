@@ -17,6 +17,8 @@ use NilPortugues\Serializer\Serializer;
 
 class DataIncludedHelper
 {
+    private static $includedIds = [];
+
     /**
      * @param \NilPortugues\Api\Mapping\Mapping[] $mappings
      * @param array                               $array
@@ -29,7 +31,7 @@ class DataIncludedHelper
 
         foreach (self::removeTypeAndId($mappings, $array) as $value) {
             if (\is_array($value)) {
-                if (\array_key_exists(Serializer::CLASS_IDENTIFIER_KEY, $value)) {
+                if (isset($value[Serializer::CLASS_IDENTIFIER_KEY])) {
                     $attributes = [];
                     $relationships = [];
                     $type = $value[Serializer::CLASS_IDENTIFIER_KEY];
@@ -96,14 +98,14 @@ class DataIncludedHelper
             if (PropertyHelper::isAttributeProperty($mappings, $propertyName, $type)) {
 
 		$propertyName = DataAttributesHelper::transformToValidMemberName(RecursiveFormatterHelper::camelCaseToUnderscore($propertyName));
-                if (\array_key_exists(Serializer::MAP_TYPE, $attribute)
+		        if (isset($attribute[Serializer::MAP_TYPE])
                     && count(array_values($attribute[Serializer::SCALAR_VALUE])) > 0
                     && \array_key_exists(Serializer::CLASS_IDENTIFIER_KEY, array_values($attribute[Serializer::SCALAR_VALUE])[0])) {
                     self::setResponseDataIncluded($mappings, $value, $data);
                     continue;
                 }
 
-                if (\array_key_exists(Serializer::CLASS_IDENTIFIER_KEY, $attribute)) {
+                if (isset($attribute[Serializer::CLASS_IDENTIFIER_KEY])) {
                     self::setResponseDataIncluded($mappings, $value, $data);
 
                     $relationships[$propertyName] = \array_merge(
@@ -135,6 +137,12 @@ class DataIncludedHelper
             $includedData = PropertyHelper::setResponseDataTypeAndId($mappings, $value);
 
             if (self::hasIdKey($includedData)) {
+                if (isset(self::$includedIds[$includedData[JsonApiTransformer::ID_KEY]])) {
+                    return;
+                }
+
+                self::$includedIds[$includedData[JsonApiTransformer::ID_KEY]] = 1;
+
                 $arrayData = \array_merge(
                     [
                         JsonApiTransformer::TYPE_KEY => $includedData[JsonApiTransformer::TYPE_KEY],
@@ -164,7 +172,8 @@ class DataIncludedHelper
                 }
 
                 $existingIndex = false;
-                if (array_key_exists(JsonApiTransformer::INCLUDED_KEY, $data)) {
+
+                if (isset($data[JsonApiTransformer::INCLUDED_KEY])) {
                     $existingIndex = self::findIncludedIndex($data[JsonApiTransformer::INCLUDED_KEY], $arrayData[JsonApiTransformer::ID_KEY], $arrayData[JsonApiTransformer::TYPE_KEY]);
                 }
                 if ($existingIndex !== false) {
@@ -174,11 +183,6 @@ class DataIncludedHelper
                     $data[JsonApiTransformer::INCLUDED_KEY][] = \array_filter($arrayData, self::filterEmptyArray());
                 }
             }
-        }
-        if (!empty($data[JsonApiTransformer::INCLUDED_KEY])) {
-            $data[JsonApiTransformer::INCLUDED_KEY] = \array_values(
-                \array_unique($data[JsonApiTransformer::INCLUDED_KEY], SORT_REGULAR)
-            );
         }
     }
 
@@ -227,7 +231,7 @@ class DataIncludedHelper
             if (PropertyHelper::isAttributeProperty($mappings, $propertyName, $type)) {
                 $propertyName = DataAttributesHelper::transformToValidMemberName(RecursiveFormatterHelper::camelCaseToUnderscore($propertyName));
 
-                if (\is_array($attribute) && \array_key_exists(Serializer::CLASS_IDENTIFIER_KEY, $attribute)) {
+                if (\is_array($attribute) && isset($attribute[Serializer::CLASS_IDENTIFIER_KEY])) {
                     $data[$propertyName][JsonApiTransformer::DATA_KEY] = PropertyHelper::setResponseDataTypeAndId(
                         $mappings,
                         $attribute
@@ -236,11 +240,11 @@ class DataIncludedHelper
                     continue;
                 }
 
-                if (\is_array($attribute) && \array_key_exists(Serializer::MAP_TYPE, $attribute)) {
+                if (\is_array($attribute) && isset($attribute[Serializer::MAP_TYPE])) {
                     $relations = [];
                     $elements = $attribute[Serializer::SCALAR_VALUE];
                     foreach ($elements as $arrayValue) {
-                        if (\array_key_exists(Serializer::CLASS_IDENTIFIER_KEY, $arrayValue)) {
+                        if (isset($arrayValue[Serializer::CLASS_IDENTIFIER_KEY])) {
                             $relations[] = PropertyHelper::setResponseDataTypeAndId($mappings, $arrayValue);
                         }
                     }
@@ -265,7 +269,7 @@ class DataIncludedHelper
         $relationships = [];
         foreach ($arrayData[JsonApiTransformer::RELATIONSHIPS_KEY] as $attribute => $attributeValue) {
             //if $value[data] is not found, get next level where [data] should exist.
-            if (!array_key_exists(JsonApiTransformer::DATA_KEY, $attributeValue)) {
+            if (!isset($attributeValue[JsonApiTransformer::DATA_KEY])) {
                 array_shift($attributeValue);
             }
 

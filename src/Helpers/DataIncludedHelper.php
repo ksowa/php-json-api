@@ -247,13 +247,15 @@ class DataIncludedHelper
 
                 if (\is_array($attribute) && isset($attribute[Serializer::MAP_TYPE])) {
                     $relations = [];
+                    $relationsAdded = false;
                     $elements = $attribute[Serializer::SCALAR_VALUE];
                     foreach ($elements as $arrayValue) {
                         if (isset($arrayValue[Serializer::CLASS_IDENTIFIER_KEY])) {
                             $relations[] = PropertyHelper::setResponseDataTypeAndId($mappings, $arrayValue);
+                            $relationsAdded = true;
                         }
                     }
-                    if (count($relations) > 0) {
+                    if ($relationsAdded) {
                         $data[DataLinksHelper::camelCaseToUnderscore($propertyName)][JsonApiTransformer::DATA_KEY] = $relations;
                     }
                     continue;

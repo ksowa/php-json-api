@@ -19,6 +19,11 @@ class DataIncludedHelper
 {
     private static $includedIds = [];
 
+    public static function clearIncludeIds()
+    {
+        self::$includedIds = [];
+    }
+
     /**
      * @param \NilPortugues\Api\Mapping\Mapping[] $mappings
      * @param array                               $array

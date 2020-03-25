@@ -10,6 +10,7 @@
 
 namespace NilPortugues\Api\JsonApi;
 
+use NilPortugues\Api\JsonApi\Helpers\DataIncludedHelper;
 use NilPortugues\Api\JsonApi\Http\Request\Parameters\Fields;
 use NilPortugues\Api\JsonApi\Http\Request\Parameters\Included;
 use NilPortugues\Serializer\DeepCopySerializer;
@@ -49,6 +50,8 @@ class JsonApiSerializer extends DeepCopySerializer
      */
     public function serialize($value, Fields $fields = null, Included $included = null)
     {
+        DataIncludedHelper::clearIncludeIds();
+
         if (null !== $fields) {
             $this->filterOutResourceFields($fields);
         }

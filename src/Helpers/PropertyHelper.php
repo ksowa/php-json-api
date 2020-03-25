@@ -55,7 +55,7 @@ class PropertyHelper
     public static function getIdValues(array $mappings, array $value, $type)
     {
         $ids = [];
-        foreach (\array_keys($value) as $propertyName) {
+        foreach ($value as $propertyName => $v) {
             if (\in_array($propertyName, RecursiveFormatterHelper::getIdProperties($mappings, $type), true)) {
                 $id = RecursiveFormatterHelper::getIdValue($value[$propertyName]);
                 $ids[] = (\is_array($id)) ? \implode(JsonApiTransformer::ID_SEPARATOR, $id) : $id;

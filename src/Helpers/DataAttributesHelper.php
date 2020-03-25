@@ -125,8 +125,9 @@ class DataAttributesHelper
     {
         $attributeName = \str_replace(self::$forbiddenMemberNameCharacters, '', $attributeName);
 
-        $attributeName = \ltrim($attributeName, \implode('', self::$forbiddenAsFirstOrLastCharacter));
-        $attributeName = \rtrim($attributeName, \implode('', self::$forbiddenAsFirstOrLastCharacter));
+        $impl = \implode('', self::$forbiddenAsFirstOrLastCharacter);
+        $attributeName = \ltrim($attributeName, $impl);
+        $attributeName = \rtrim($attributeName, $impl);
 
         return $attributeName;
     }
@@ -154,8 +155,9 @@ class DataAttributesHelper
         if ($keepIdKeys) {
             $ids = PropertyHelper::getIdValues($mappings, $value, $type);
 
-            if (count($ids) > 0) {
-                if (1 === count($ids)) {
+            $count = count($ids);
+            if ($count > 0) {
+                if (1 === $count) {
                     $ids = array_pop($ids);
                 }
                 $attributes[$keyName] = $ids;
